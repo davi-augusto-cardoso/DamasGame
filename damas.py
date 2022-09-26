@@ -85,43 +85,37 @@ class Player:
         piece = tileStart.piece
         playValid, makePoint = self.rulesGame(tileStart, tileEnd, startPosition, endPosition)
         
-        # Caso a jogada seja válida e não faça ponto
+        # Caso a jogada seja válida e não haja uma peça adversária no ponto de destino
         if(playValid and  (not makePoint)):
             if(piece.position[0] == 8 and piece.color == "red"):
                 piece.dama = True
             elif(piece.position[0] == 0 and piece.color == "black"):
                 piece.dama = True
-                
+                 
             tileEnd.piece = piece
             tileStart.piece = None
             
         # Caso a jogada seja válida e haja uma peça adversária no ponto de destino
         elif(playValid and makePoint):
+            if(piece.dama):
+                j=0
+                for i in range(startPosition[0], endPosition[0]):
+                    if(tile[i][j].piece != None):
+                        tileEnd = tile[i][j]
+                        endPosition = (i, j)   
+                    j+=1
             tileEnd.piece = None
             
-            columnPosition = piece.position[1]
-            rowPosition    = piece.position[0]
+            col, row = self.adjustDirection(startPosition, endPosition)
             
-            # Ajustando posição vertical da peça
-            if(endPosition[0]-startPosition[0] < 0):
-                columnPosition -=2
-            else:
-                columnPosition +=2
-                
-            # Ajustando posição horizontal da peça
-            if(endPosition[1]-startPosition[1] < 0):
-                rowPosition -=2
-            else:
-                rowPosition +=2
-            
-            tile[columnPosition][rowPosition].piece = piece
+            tile[col][row].piece = piece
             tileStart.piece = None
                 
         # Caso a jogada não seja válida
         else:
             print("Jogada inválida!")
     
-    def  rulesGame(self, tileStart, tileEnd, endPosition, startPosition):
+    def  rulesGame(self, tileStart, tileEnd, startPosition, endPosition):
         
         # verificando se existe peça na posiçao inicial
         if(tileStart.piece == None):
@@ -148,30 +142,37 @@ class Player:
             if(tileStart.piece.color == tileEnd.piece.color):
                 return False, False
             
-            columnPosition = endPosition[1]
-            rowPosition    = endPosition[0]
-            
-            # Verficando coordenada atrás da peça de origem vertical
-            if(endPosition[0]-startPosition[0] < 0):
-                columnPosition -=2
-            else:
-                columnPosition +=2
-                
-            # Verficando coordenada atrás da peça de origem horizoltal
-            if(endPosition[1]-startPosition[1] < 0):
-                rowPosition -=2
-            else:
-                rowPosition +=2
+            col, row = self.adjustDirection(startPosition, endPosition)
             
             # Verificando se há alguma peça na posição atrás da posição destino
-            if(self.board[columnPosition][rowPosition].piece != None):
+            if(self.board[col][row].piece != None):
                 return False, False
             
             else:
                 return True, True
         
         return True, False
+    
+    def adjustDirection(self, startPosition: tuple, endPosition: tuple):
+        columnPosition = startPosition[0]
+        rowPosition    = startPosition[1]
         
+        value = abs(endPosition[0]-startPosition[0])+1
+        
+        # Ajustando vertical
+        if(endPosition[0]-startPosition[0] < 0):
+            columnPosition -= value
+        else:
+            columnPosition += value
+                
+        # Ajustando horizontal
+        if(endPosition[1]-startPosition[1] < 0):
+            rowPosition -= value
+        else:
+            rowPosition += value
+        
+        return columnPosition, rowPosition 
+           
 board = Board()
 
 player = Player(board)
@@ -184,4 +185,9 @@ board.showTable()
 player.play((5, 1), (4, 2))
 board.showTable()
 player.play((3, 3), (4, 4))
+board.showTable()
+board.board[4][4].piece.dama = True
+player.play((1, 1), (2, 0))
+board.showTable()
+player.play((4, 4), (1, 1))
 board.showTable()
