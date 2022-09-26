@@ -2,16 +2,16 @@ import sys
 from turtle import position
 
 class Piece:
-    def __init__(self, color: str = None, position: tuple = None, dama: bool = None):
-        self.color = color
-        self.position = position
-        self.dama     = dama
+    def __init__(self, color: str = None, position: tuple = None, dama: bool = False):
+        self.color      = color
+        self.position   = position
+        self.dama       = dama
         
 class Tile:
-    def __init__(self, color, piece, position):
-        self.color = color
-        self.piece = piece
-        self.position = position
+    def __init__(self, color: str, piece: Piece, position: tuple):
+        self.color      = color
+        self.piece      = piece
+        self.position   = position
         
 class Board:
 
@@ -49,9 +49,9 @@ class Board:
                     elif(tile.color == "white"):
                         sys.stdout.write("\u2B1C")   
                 else:
-                    if(tile.piece.color == "black"):
+                    if(tile.piece.color == "red"):
                         sys.stdout.write("\033[0;31m" + "\u2B57 "+"\033[0;0m")
-                    elif(tile.piece.color == "white"):
+                    elif(tile.piece.color == "black"):
                         sys.stdout.write("\033[0;30m" + "\u2B57 "+"\033[0;0m")      
             sys.stdout.write("\n")   
         sys.stdout.write("\033[0;0m")  
@@ -70,14 +70,14 @@ class Player:
         for row in self.board:
             for tile in row:
                 if(tile.color == "black" and j < 3):
-                    tile.piece = Piece("black", (i, j))
+                    tile.piece = Piece("red", (i, j))
                 elif(tile.color == "black" and j >= 5):
-                    tile.piece = Piece("white", (i, j))
+                    tile.piece = Piece("black", (i, j))
                 i+=1
             i = 0
             j +=1 
             
-    def play(self, startPosition, endPosition):
+    def play(self, startPosition: tuple, endPosition: tuple):
         tile        = self.board
         tileStart   = tile[startPosition[0]][startPosition[1]]
         tileEnd     = tile[endPosition[0]][endPosition[1]]
@@ -87,6 +87,11 @@ class Player:
         
         # Caso a jogada seja válida e não faça ponto
         if(playValid and  (not makePoint)):
+            if(piece.position[0] == 8 and piece.color == "red"):
+                piece.dama = True
+            elif(piece.position[0] == 0 and piece.color == "black"):
+                piece.dama = True
+                
             tileEnd.piece = piece
             tileStart.piece = None
             
@@ -117,35 +122,56 @@ class Player:
             print("Jogada inválida!")
     
     def  rulesGame(self, tileStart, tileEnd, endPosition, startPosition):
+        
         # verificando se existe peça na posiçao inicial
         if(tileStart.piece == None):
             return False, False
         
-        #Verificando se a posição destino da peça é um tile de cor preta
-        elif(tileEnd.color != "black"):
-            return False, False
+        # Verificando se é um movimento diagonal
+        if(abs(endPosition[0]-startPosition[0]) != abs(endPosition[1]-startPosition[1])):
+            return False, False  
         
         # Verificando se a posição destino esta dentro do tabuleiro
-        elif(64 < (endPosition[0] * endPosition[1]) or
+        if(64 < (endPosition[0] * endPosition[1]) or
             (endPosition[0] * endPosition[1]) < 0):
             return False, False
 
-            
-        # Verificando se o tile detino ultrapassa o alcance da peça
-        elif(abs(endPosition[0]-startPosition[0]) > 1 or abs(endPosition[1]-startPosition[1]) > 1 ):
-            return False, False
-        
+        # Verificando se é uma peça comum
+        if(not tileStart.piece.dama):
+            # Verificando se o tile detino ultrapassa o alcance da peça
+            if(abs(endPosition[0]-startPosition[0]) > 1 or abs(endPosition[1]-startPosition[1]) > 1 ):
+                return False, False   
+
         # Verificando se a posição destino esta vazia 
-        elif(tileEnd.piece != None):
+        if(tileEnd.piece != None):
             # Verificando se há uma peça da mesma cor na posição destino
             if(tileStart.piece.color == tileEnd.piece.color):
                 return False, False
+            
+            columnPosition = endPosition[1]
+            rowPosition    = endPosition[0]
+            
+            # Verficando coordenada atrás da peça de origem vertical
+            if(endPosition[0]-startPosition[0] < 0):
+                columnPosition -=2
+            else:
+                columnPosition +=2
+                
+            # Verficando coordenada atrás da peça de origem horizoltal
+            if(endPosition[1]-startPosition[1] < 0):
+                rowPosition -=2
+            else:
+                rowPosition +=2
+            
+            # Verificando se há alguma peça na posição atrás da posição destino
+            if(self.board[columnPosition][rowPosition].piece != None):
+                return False, False
+            
             else:
                 return True, True
         
         return True, False
         
-
 board = Board()
 
 player = Player(board)
@@ -157,5 +183,5 @@ player.play((3, 1), (4, 2))
 board.showTable()
 player.play((5, 1), (4, 2))
 board.showTable()
-player.play((2, 2), (3, 3))
+player.play((3, 3), (4, 4))
 board.showTable()
