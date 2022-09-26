@@ -1,6 +1,4 @@
 import sys
-from turtle import position
-from typing import ValuesView
 
 class Piece:
     def __init__(self, color: str = None, position: tuple = None, dama: bool = False):
@@ -63,8 +61,9 @@ class Board:
 class Player:
     board = list()
 
-    def __init__(self, board: Board):
-        self.board = board.board
+    def __init__(self, board: Board, myPiecesColor: str = None):
+        self.board          = board.board
+        self.myPiecesColor  = myPiecesColor
 
     def fillBoard(self):
         i, j = 0, 0
@@ -124,6 +123,8 @@ class Player:
         # Caso a jogada não seja válida
         else:
             print("Jogada inválida!")
+    
+        return playValid
     
     def  rulesGame(self, tileStart, tileEnd, startPosition, endPosition):
         
