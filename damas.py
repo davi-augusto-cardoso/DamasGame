@@ -1,5 +1,6 @@
 import sys
 from turtle import position
+from typing import ValuesView
 
 class Piece:
     def __init__(self, color: str = None, position: tuple = None, dama: bool = False):
@@ -85,6 +86,22 @@ class Player:
         piece = tileStart.piece
         playValid, makePoint = self.rulesGame(tileStart, tileEnd, startPosition, endPosition)
         
+        # Verificando se a peça é uma dama e se a jogada é valida
+        if(piece.dama and playValid):
+        
+            valueI = 1 if (endPosition[0]-startPosition[0]) >= 0 else -1
+            valueJ = 1 if (endPosition[1]-startPosition[1]) >= 0 else -1
+            j = startPosition[1]
+            
+            # Verificando se há alguma peça inimiga na diagonal percorrida pela da dama
+            for i in range(startPosition[0]-abs(valueI), endPosition[0]-abs(valueI), valueI):
+                j += valueJ
+                if(tile[i][j].piece != None and tile[i][j].piece.color != piece.color):
+                    tileEnd     = tile[j][i]
+                    endPosition = (j, i) 
+                    makePoint   = True  
+                
+  
         # Caso a jogada seja válida e não haja uma peça adversária no ponto de destino
         if(playValid and  (not makePoint)):
             if(piece.position[0] == 8 and piece.color == "red"):
@@ -97,13 +114,6 @@ class Player:
             
         # Caso a jogada seja válida e haja uma peça adversária no ponto de destino
         elif(playValid and makePoint):
-            if(piece.dama):
-                j=0
-                for i in range(startPosition[0], endPosition[0]):
-                    if(tile[i][j].piece != None):
-                        tileEnd = tile[i][j]
-                        endPosition = (i, j)   
-                    j+=1
             tileEnd.piece = None
             
             col, row = self.adjustDirection(startPosition, endPosition)
@@ -189,5 +199,10 @@ board.showTable()
 board.board[4][4].piece.dama = True
 player.play((1, 1), (2, 0))
 board.showTable()
-player.play((4, 4), (1, 1))
+player.play((4, 4), (3, 3))
+board.showTable()
+player.play((2, 2), (3, 1))
+board.showTable()
+board.board[5][5].piece.dama = True
+player.play((5, 5), (2, 2))
 board.showTable()
