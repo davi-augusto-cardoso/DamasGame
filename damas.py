@@ -1,4 +1,5 @@
 import sys
+from gameRules import Rules
 
 class Piece:
     def __init__(self, color: str = None, position: tuple = None, dama: bool = False):
@@ -36,8 +37,8 @@ class Board:
             self.board.append(row)
 
     def showTable(self):
-        count = 1
-        sys.stdout.write("\033[0;32m" + "  a b c d e f g h\n" + "\033[0;0m")
+        count = 0
+        sys.stdout.write("\033[0;32m" + "  0 1 2 3 4 5 6 7\n" + "\033[0;0m")
         for row in self.board:
             sys.stdout.write("\033[0;32m" +str(count)+ "\033[0;0m") 
             count += 1 
@@ -64,7 +65,10 @@ class Player:
     def __init__(self, board: Board, myPiecesColor: str = None):
         self.board          = board.board
         self.myPiecesColor  = myPiecesColor
+        
+        self.rules = Rules(self.board)
 
+    # Colocando as peças nas suas posições iniciais
     def fillBoard(self):
         i, j = 0, 0
         for row in self.board:
@@ -83,21 +87,21 @@ class Player:
         tileEnd     = tile[endPosition[0]][endPosition[1]]
         
         piece = tileStart.piece
-        playValid, makePoint = self.rulesGame(tileStart, tileEnd, startPosition, endPosition)
+        playValid, makePoint = self.rules.checkRules(tileStart, tileEnd, startPosition, endPosition, self.myPiecesColor)
         
         # Verificando se a peça é uma dama e se a jogada é valida
         if(piece.dama and playValid):
         
-            valueI = 1 if (endPosition[0]-startPosition[0]) >= 0 else -1
-            valueJ = 1 if (endPosition[1]-startPosition[1]) >= 0 else -1
+            valueI = 1 if (endPosition[0]-startPosition[0]) > 0 else -1
+            valueJ = 1 if (endPosition[1]-startPosition[1]) > 0 else -1
             j = startPosition[1]
             
             # Verificando se há alguma peça inimiga na diagonal percorrida pela da dama
-            for i in range(startPosition[0]-abs(valueI), endPosition[0]-abs(valueI), valueI):
+            for i in range(startPosition[0]+valueI, endPosition[0]+valueI, valueI):
                 j += valueJ
                 if(tile[i][j].piece != None and tile[i][j].piece.color != piece.color):
-                    tileEnd     = tile[j][i]
-                    endPosition = (j, i) 
+                    tileEnd     = tile[i][j]
+                    endPosition = (i, j) 
                     makePoint   = True  
                 
   
@@ -115,7 +119,7 @@ class Player:
         elif(playValid and makePoint):
             tileEnd.piece = None
             
-            col, row = self.adjustDirection(startPosition, endPosition)
+            col, row = self.rules.checkDirection(startPosition, endPosition)
             
             tile[col][row].piece = piece
             tileStart.piece = None
@@ -125,85 +129,22 @@ class Player:
             print("Jogada inválida!")
     
         return playValid
-    
-    def  rulesGame(self, tileStart, tileEnd, startPosition, endPosition):
-        
-        # verificando se existe peça na posiçao inicial
-        if(tileStart.piece == None):
-            return False, False
-        
-        # Verificando se é um movimento diagonal
-        if(abs(endPosition[0]-startPosition[0]) != abs(endPosition[1]-startPosition[1])):
-            return False, False  
-        
-        # Verificando se a posição destino esta dentro do tabuleiro
-        if(64 < (endPosition[0] * endPosition[1]) or
-            (endPosition[0] * endPosition[1]) < 0):
-            return False, False
 
-        # Verificando se é uma peça comum
-        if(not tileStart.piece.dama):
-            # Verificando se o tile detino ultrapassa o alcance da peça
-            if(abs(endPosition[0]-startPosition[0]) > 1 or abs(endPosition[1]-startPosition[1]) > 1 ):
-                return False, False   
 
-        # Verificando se a posição destino esta vazia 
-        if(tileEnd.piece != None):
-            # Verificando se há uma peça da mesma cor na posição destino
-            if(tileStart.piece.color == tileEnd.piece.color):
-                return False, False
-            
-            col, row = self.adjustDirection(startPosition, endPosition)
-            
-            # Verificando se há alguma peça na posição atrás da posição destino
-            if(self.board[col][row].piece != None):
-                return False, False
-            
-            else:
-                return True, True
-        
-        return True, False
-    
-    def adjustDirection(self, startPosition: tuple, endPosition: tuple):
-        columnPosition = startPosition[0]
-        rowPosition    = startPosition[1]
-        
-        value = abs(endPosition[0]-startPosition[0])+1
-        
-        # Ajustando vertical
-        if(endPosition[0]-startPosition[0] < 0):
-            columnPosition -= value
-        else:
-            columnPosition += value
-                
-        # Ajustando horizontal
-        if(endPosition[1]-startPosition[1] < 0):
-            rowPosition -= value
-        else:
-            rowPosition += value
-        
-        return columnPosition, rowPosition 
-           
-board = Board()
+# board = Board()
 
-player = Player(board)
-player.fillBoard()
-board.showTable()
-player.play((2, 0), (3, 1))
-board.showTable()
-player.play((3, 1), (4, 2))
-board.showTable()
-player.play((5, 1), (4, 2))
-board.showTable()
-player.play((3, 3), (4, 4))
-board.showTable()
-board.board[4][4].piece.dama = True
-player.play((1, 1), (2, 0))
-board.showTable()
-player.play((4, 4), (3, 3))
-board.showTable()
-player.play((2, 2), (3, 1))
-board.showTable()
-board.board[5][5].piece.dama = True
-player.play((5, 5), (2, 2))
-board.showTable()
+# player1 = Player(board, "red")
+# player2 = Player(board, "black")
+# player1.fillBoard()
+# board.showTable()
+
+# board.board[2][0].piece.dama = True
+# player1.play((2,0), (3,1))
+# board.showTable()
+# player1.play((2,0), (4,2))
+# board.showTable()
+# board.board[5][3].piece.dama = True
+# player2.play((5,1), (4,2))
+# board.showTable()
+# player2.play((5,3), (3,1))
+# board.showTable()
