@@ -1,9 +1,10 @@
 
 class Rules:
-    
-    def __init__(self, tile):
-        self.tile  = tile
-    def checkRules(self, tileStart, tileEnd, startPosition, endPosition, myPiecesColor):
+
+    def checkRules(self, board, startPosition, endPosition, myPiecesColor):
+        tileStart   = board[startPosition[0]][startPosition[1]]
+        tileEnd     = board[endPosition[0]][endPosition[1]]
+        
         # verificando se existe peça na posiçao inicial
         if(tileStart.piece == None):
             return False, False
@@ -43,7 +44,7 @@ class Rules:
             # Verificando se há alguma peça amiga na diagonal percorrida pela da dama
             for i in range(startPosition[0]+valueI, endPosition[0]+valueI, valueI):
                 j += valueJ
-                if(self.tile[i][j].piece != None and self.tile[i][j].piece.color == tileStart.piece.color):
+                if(board[i][j].piece != None and board[i][j].piece.color == tileStart.piece.color):
                     return False, False
                 
         # Verificando se a posição destino esta vazia 
@@ -55,7 +56,7 @@ class Rules:
             col, row = self.checkDirection(startPosition, endPosition)
             
             # Verificando se há alguma peça na posição atrás da posição destino
-            if(self.tile[col][row].piece != None):
+            if(board[col][row].piece != None):
                 return False, False
             
             else:

@@ -62,11 +62,11 @@ class Board:
 class Player:
     board = list()
 
-    def __init__(self, board: Board, myPiecesColor: str = None):
-        self.board          = board.board
+    def __init__(self, board: list, myPiecesColor: str = None):
+        self.board          = board
         self.myPiecesColor  = myPiecesColor
         
-        self.rules = Rules(self.board)
+        self.rules = Rules()
 
     # Colocando as peças nas suas posições iniciais
     def fillBoard(self):
@@ -74,9 +74,9 @@ class Player:
         for row in self.board:
             for tile in row:
                 if(tile.color == "black" and j < 3):
-                    tile.piece = Piece("red", (i, j))
+                    tile.piece = Piece("red", (j, i))
                 elif(tile.color == "black" and j >= 5):
-                    tile.piece = Piece("black", (i, j))
+                    tile.piece = Piece("black", (j, i))
                 i+=1
             i = 0
             j +=1 
@@ -87,7 +87,7 @@ class Player:
         tileEnd     = tile[endPosition[0]][endPosition[1]]
         
         piece = tileStart.piece
-        playValid, makePoint = self.rules.checkRules(tileStart, tileEnd, startPosition, endPosition, self.myPiecesColor)
+        playValid, makePoint = self.rules.checkRules(self.board, startPosition, endPosition, self.myPiecesColor)
         
         # Verificando se a peça é uma dama e se a jogada é valida
         if(piece.dama and playValid):

@@ -1,4 +1,5 @@
 from damas import *
+from AI import AI
 
 class Game:
     def __init__(self):
@@ -14,8 +15,8 @@ class Game:
         colorPlayer1 = "red" if chooseColor == 1 else "black"
         colorPlayer2 = "red" if colorPlayer1 == "black" else "black"
         
-        player1 = Player(board, colorPlayer1)
-        player2 = Player(board, colorPlayer2)
+        player1 = Player(board.board, colorPlayer1)
+        player2 = Player(board.board, colorPlayer2)
         
         player1.fillBoard()
         
@@ -31,9 +32,6 @@ class Game:
                 if isvalid : turn += 1
             # Os turnos ímpares serão os turnos do player 1
             else:
-                start = (int(input("Coluna origem: ")), int(input("Linha origem: ")))
-                end = (int(input("Coluna destino: ")), int(input("Linha destino: ")))
-                isvalid = player2.play(start, end)
-                if isvalid : turn += 1
+                AI(player2)
             
 Game()
